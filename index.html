@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farewell Letter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: 
+                repeating-linear-gradient(
+                    45deg,
+                    #e0e5ec,
+                    #e0e5ec 10px,
+                    #eaeef5 10px,
+                    #eaeef5 20px
+                );
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 80px 20px 20px 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .sparkle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 100;
+            font-size: 20px;
+        }
+
+        @keyframes sparkleAnim {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2) rotate(180deg);
+                opacity: 0;
+            }
+        }
+
+        .flower {
+            position: fixed;
+            bottom: -100px;
+            font-size: 40px;
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0;
+        }
+
+        @keyframes flowerGrow {
+            0% {
+                transform: translateY(0) scale(0);
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-150px) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .container {
+            perspective: 1000px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .envelope {
+            width: 450px;
+            height: 300px;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .envelope:hover:not(.open) {
+            transform: scale(1.05);
+        }
+
+        .envelope-back {
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            border: 2px solid #c4c4c4;
+            position: absolute;
+            z-index: 1;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+        }
+
+        .stamp {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: #6b7280;
+            border: 3px dashed #fff;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .address {
+            position: absolute;
+            bottom: 80px;
+            left: 30px;
+            color: #4b5563;
+            font-size: 18px;
+            z-index: 2;
+            font-style: italic;
+        }
+
+        .envelope-flap {
+            width: 0;
+            height: 0;
+            border-left: 225px solid transparent;
+            border-right: 225px solid transparent;
+            border-top: 150px solid #e5e7eb;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 3;
+            transform-origin: top center;
+            transition: all 0.6s ease;
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.1));
+        }
+
+        .envelope.open .envelope-flap {
+            transform: rotateX(-180deg);
+            z-index: 0;
+        }
+
+        .letter-container {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(0);
+            z-index: 4;
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            opacity: 0;
+        }
+
+        .envelope.open .letter-container {
+            transform: translateX(-50%) translateY(-200px);
+            opacity: 1;
+            z-index: 10;
+        }
+
+        .letter {
+            width: 400px;
+            max-height: 500px;
+            background: #ffffff;
+            padding: 40px 35px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            border: 1px solid #d1d5db;
+            overflow-y: scroll;
+            position: relative;
+        }
+
+        .letter::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .letter::-webkit-scrollbar-track {
+            background: #f3f4f6;
+            border-radius: 10px;
+        }
+
+        .letter::-webkit-scrollbar-thumb {
+            background: #9ca3af;
+            border-radius: 10px;
+        }
+
+        .letter::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+
+        .letter::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #6b7280;
+        }
+
+        .photo-frame {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 25px;
+            border: 3px solid #9ca3af;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+        }
+
+        .photo-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .letter h1 {
+            color: #374151;
+            margin-bottom: 20px;
+            font-size: 28px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .date {
+            text-align: right;
+            color: #6b7280;
+            font-size: 13px;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .letter p {
+            line-height: 1.8;
+            color: #1f2937;
+            margin-bottom: 16px;
+            font-size: 15px;
+            text-align: justify;
+        }
+
+        .greeting {
+            font-weight: bold;
+            color: #374151;
+            font-size: 17px;
+        }
+
+        .letter .signature {
+            margin-top: 35px;
+            text-align: right;
+            color: #374151;
+            font-size: 16px;
+        }
+
+        .signature-name {
+            font-style: italic;
+            font-size: 20px;
+            margin-top: 8px;
+        }
+
+        .divider {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 16px;
+            margin: 20px 0;
+        }
+
+        .instruction {
+            position: absolute;
+            top: -80px;
+            width: 100%;
+            text-align: center;
+            color: #374151;
+            font-size: 20px;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+            font-weight: 500;
+        }
+
+        .envelope.open ~ .instruction {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: -40px;
+            right: 10px;
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            font-family: 'Georgia', serif;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .envelope.open ~ .close-btn {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .close-btn:hover {
+            background: #4b5563;
+            transform: scale(1.05);
+        }
+
+        .music-control {
+            display: none;
+        }
+
+        .music-hint {
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .envelope {
+                width: 340px;
+                height: 240px;
+            }
+
+            .envelope-flap {
+                border-left: 170px solid transparent;
+                border-right: 170px solid transparent;
+                border-top: 120px solid #e5e7eb;
+            }
+
+            .letter {
+                width: 300px;
+                max-height: 500px;
+                padding: 30px 25px;
+            }
+
+            .letter h1 {
+                font-size: 24px;
+            }
+
+            .letter p {
+                font-size: 14px;
+            }
+
+            .photo-frame {
+                width: 120px;
+                height: 120px;
+                font-size: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="instruction">Click the envelope to open</div>
+        <button class="close-btn" id="closeBtn">Close ×</button>
+        <div class="envelope" id="envelope">
+            <div class="envelope-back">
+                <div class="stamp">👋</div>
+                <div class="address">To: Mr. Kristian</div>
+            </div>
+            <div class="letter-container">
+                <div class="letter">
+                    <div class="photo-frame" style="display: none;">
+                        👤
+                        <!-- Replace with: <img src="YOUR_PHOTO_URL" alt="Photo"> -->
+                    </div>
+                    
+                    <h1>The Last Day</h1>
+                    <div class="date">December 3, 2025</div>
+                    
+                    <p class="greeting">Dear Mr. Kristian,</p>
+                    
+                    <p>Hi Mr. Kristian… huhu, I can't believe this is your last day. Honestly, I am so sad.</p>
+                    
+                    <p>First of all, thank you for being such a wonderful leader. I am truly amazed by you - you are smart, kind, and you genuinely pushed me to try everything and step out of my comfort zone.</p>
+                    
+                    <p>I will never forget how much you cared. Thank you for being there when I was sick, and especially for your support when my grandmother passed away. I also remember the early days when I was confused about how to talk to Ms. Jas, but you were there to calm me down.</p>
+                    
+                    <p>Sometimes I felt like I wasn't enough, but you were always the first person to encourage me. Yes, we are besties!</p>
+                    
+                    <div class="divider">• • •</div>
+                    
+                    <p>Looking back, all the projects we worked on together hold a special place in my heart. From the very first one to the last, every moment was a valuable lesson for me.</p>
+                    
+                    <p>And about the Teh Tarik... I actually wanted to drink one today, but what is the point if I don't drink it with its biggest fan - you? Next time we meet, please treat me to a good Teh Tarik, okay?</p>
+                    
+                    <p>To be honest, I am confused myself. We have only known each other for 3 months, yet I feel this sad letting you go. It just shows how impactful you are to me. Sorry if I ever made any mistakes or was slow to learn during my time as your trainee.</p>
+                    
+                    <p>I hope you stay healthy, Mr. Kristian. I believe you will always excel because I know how passionate you are. I also pray that your father recovers fully and gets better soon.</p>
+                    
+                    <p>Please, please take care of your health and drink lots of water, okay? I would be really sad if I heard you were sick.</p>
+                    
+                    <p><strong>I am going to miss you so much more than I expected. Stay amazing!</strong></p>
+                    
+                    <div class="signature">
+                        Sincerely,
+                        <div class="signature-name">Ummul</div>
+                    </div>
+                </div>
+            </div>
+            <div class="envelope-flap"></div>
+        </div>
+    </div>
+
+
+    <script>
+        const envelope = document.getElementById('envelope');
+        const closeBtn = document.getElementById('closeBtn');
+        let isOpen = false;
+
+        function createConfetti() {
+            const colors = ['#9ca3af', '#6b7280', '#4b5563'];
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animation = `confettiFall ${2 + Math.random() * 2}s linear`;
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    document.body.appendChild(confetti);
+
+                    setTimeout(() => confetti.remove(), 4000);
+                }, i * 30);
+            }
+        }
+
+        function createSparkle(x, y) {
+            const sparkles = ['✨', '⭐', '💫'];
+            for (let i = 0; i < 6; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.innerHTML = sparkles[Math.floor(Math.random() * sparkles.length)];
+                sparkle.style.left = x + (Math.random() - 0.5) * 100 + 'px';
+                sparkle.style.top = y + (Math.random() - 0.5) * 100 + 'px';
+                sparkle.style.animation = `sparkleAnim ${1 + Math.random()}s ease-out`;
+                sparkle.style.animationDelay = i * 0.1 + 's';
+                document.body.appendChild(sparkle);
+
+                setTimeout(() => sparkle.remove(), 2000);
+            }
+        }
+
+        function growFlowers() {
+            const flowers = ['🌿', '🌿', '🌿'];
+            const positions = [15, 35, 55, 75];
+            
+            positions.forEach((pos, index) => {
+                setTimeout(() => {
+                    const flower = document.createElement('div');
+                    flower.className = 'flower';
+                    flower.innerHTML = flowers[Math.floor(Math.random() * flowers.length)];
+                    flower.style.left = pos + '%';
+                    flower.style.animation = `flowerGrow 2s ease-out forwards`;
+                    flower.style.animationDelay = index * 0.2 + 's';
+                    document.body.appendChild(flower);
+                }, index * 200);
+            });
+        }
+
+        envelope.addEventListener('click', function(e) {
+            this.classList.toggle('open');
+            isOpen = !isOpen;
+            
+            if (isOpen) {
+                createConfetti();
+                createSparkle(e.clientX, e.clientY);
+                setTimeout(growFlowers, 500);
+            }
+        });
+
+        closeBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            envelope.classList.remove('open');
+            isOpen = false;
+        });
+    </script>
+</body>
+</html>
